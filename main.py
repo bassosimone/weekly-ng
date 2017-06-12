@@ -7,6 +7,7 @@ from __future__ import print_function
 import datetime
 
 import httplib2
+import dateutil.parser
 
 from apiclient import discovery
 from oauth2client import client
@@ -56,25 +57,58 @@ def get_calendar_id():
     return open("./private/calendar-id.txt", "rb").read().strip()
 
 
+def get_hour_rate():
+    """Returns the hour rate"""
+    return open("./private/hour-rate.txt", "rb").read().strip()
+
+
 def main():
     """Main function."""
+
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
+    time_min_input = "2017-05-01T00:00:00Z"  # TODO: get from command line
+    time_min = dateutil.parser.parse(time_min_input)
+    print("time_min:", time_min)
+
+    time_max_input = "2017-06-01T00:00:00Z"  # TODO: get from command line
+    time_max = dateutil.parser.parse(time_max_input)
+    print("time_max:", time_max)
+
     events_result = service.events().list(
-        calendarId=get_calendar_id(), timeMin=now, maxResults=10,
-        singleEvents=True, orderBy='startTime').execute()
+        calendarId=get_calendar_id(), timeMin=time_min.isoformat(),
+        timeMax=time_max.isoformat(), singleEvents=True,
+        orderBy='startTime').execute()
     events = events_result.get('items', [])
 
-    if not events:
-        print('No upcoming events found.')
+    aggregation = {}
     for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
+        summary = event['summary'].strip()
+        if not summary.startswith('work'):
+            continue
+        start = dateutil.parser.parse(
+            event['start'].get('dateTime', event['start'].get('date')))
+        end = dateutil.parser.parse(
+            event['end'].get('dateTime', event['start'].get('date')))
+        aggregation.setdefault(summary, datetime.timedelta())
+        aggregation[summary] += end - start
 
+    print("---")
+    final_total = datetime.timedelta()
+    for summary in sorted(aggregation):
+        diff = aggregation[summary]
+        summary += ":"
+        print(summary, diff)
+        final_total += diff
+
+    print("---")
+    print("total time worked:", final_total)
+
+    hour_rate = float(get_hour_rate())
+    amount = (final_total.total_seconds() / 3600.0) * hour_rate
+    print("total amount:", amount)
 
 if __name__ == '__main__':
     main()
