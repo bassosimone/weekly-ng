@@ -62,6 +62,14 @@ def get_hour_rate():
     return open("./private/hour-rate.txt", "rb").read().strip()
 
 
+def repr_time(value):
+    """ Represent time in a format suitable for the API """
+    value = value.isoformat()
+    if not value.endswith("Z"):
+        value = value + "Z"
+    return value
+
+
 def main():
     """Main function."""
 
@@ -69,17 +77,17 @@ def main():
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    time_min_input = "2017-05-01T00:00:00Z"  # TODO: get from command line
+    time_min_input = "2017-06-01T00:00:00Z"  # TODO: get from command line
     time_min = dateutil.parser.parse(time_min_input)
     print("time_min:", time_min)
 
-    time_max_input = "2017-06-01T00:00:00Z"  # TODO: get from command line
+    time_max_input = "2017-07-01T00:00:00Z"  # TODO: get from command line
     time_max = dateutil.parser.parse(time_max_input)
     print("time_max:", time_max)
 
     events_result = service.events().list(
-        calendarId=get_calendar_id(), timeMin=time_min.isoformat(),
-        timeMax=time_max.isoformat(), singleEvents=True,
+        calendarId=get_calendar_id(), timeMin=repr_time(time_min),
+        timeMax=repr_time(time_max), singleEvents=True,
         orderBy='startTime').execute()
     events = events_result.get('items', [])
 
