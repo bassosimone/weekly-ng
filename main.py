@@ -84,6 +84,7 @@ def main():
     events = events_result.get('items', [])
 
     aggregation = {}
+    final_total = datetime.timedelta()
     for event in events:
         summary = event['summary'].strip()
         if not summary.startswith('work'):
@@ -93,15 +94,13 @@ def main():
         end = dateutil.parser.parse(
             event['end'].get('dateTime', event['start'].get('date')))
         aggregation.setdefault(summary, datetime.timedelta())
-        aggregation[summary] += end - start
+        diff = end - start
+        aggregation[summary] += diff
+        final_total += diff
 
     print("---")
-    final_total = datetime.timedelta()
     for summary in sorted(aggregation):
-        diff = aggregation[summary]
-        summary += ":"
-        print(summary, diff)
-        final_total += diff
+        print(summary + ":", aggregation[summary])
 
     print("---")
     print("total time worked:", final_total)
