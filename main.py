@@ -92,6 +92,7 @@ def main():
     events = events_result.get('items', [])
 
     aggregation = {}
+    aggregation_by_day = {}
     final_total = datetime.timedelta()
     for event in events:
         summary = event['summary'].strip()
@@ -105,15 +106,35 @@ def main():
         diff = end - start
         aggregation[summary] += diff
         final_total += diff
+        day = start.strftime("%Y-%m-%d")
+        aggregation_by_day.setdefault(day, datetime.timedelta())
+        aggregation_by_day[day] += diff
 
     print("---")
     for summary in sorted(aggregation):
         print(summary + ":", aggregation[summary])
 
+    hour_rate = float(get_hour_rate())
+
+    print("---")
+    print("# Timesheet")
+    print("| Day        | Hours | Rate | Total | Cumulative |")
+    print("|:-----------|------:|-----:|------:|-----------:|")
+    cumulative = 0.0
+    for day in sorted(aggregation_by_day):
+        hours_worked = int(aggregation_by_day[day].total_seconds() // 3600)
+        day_wage = hours_worked * hour_rate
+        cumulative += day_wage
+        print("|", day,
+              "|", "{:-5d}".format(hours_worked),
+              "|", hour_rate,
+              "|", "{:-5.0f}".format(day_wage),
+              "|", "{:-10.0f}".format(cumulative),
+              "|")
+
     print("---")
     print("total time worked:", final_total)
 
-    hour_rate = float(get_hour_rate())
     amount = (final_total.total_seconds() / 3600.0) * hour_rate
     print("total amount:", amount)
 
