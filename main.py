@@ -77,11 +77,11 @@ def main():
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    time_min_input = "2017-06-01T00:00:00Z"  # TODO: get from command line
+    time_min_input = "2017-05-01T00:00:00"  # TODO: get from command line
     time_min = dateutil.parser.parse(time_min_input)
     print("time_min:", time_min)
 
-    time_max_input = "2017-07-01T00:00:00Z"  # TODO: get from command line
+    time_max_input = "2017-06-01T00:00:00"  # TODO: get from command line
     time_max = dateutil.parser.parse(time_max_input)
     print("time_max:", time_max)
 
