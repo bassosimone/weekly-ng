@@ -122,11 +122,11 @@ def main():
     print("|:-----------|------:|-----:|------:|-----------:|")
     cumulative = 0.0
     for day in sorted(aggregation_by_day):
-        hours_worked = int(aggregation_by_day[day].total_seconds() // 3600)
+        hours_worked = aggregation_by_day[day].total_seconds() / 3600.0
         day_wage = hours_worked * hour_rate
         cumulative += day_wage
         print("|", day,
-              "|", "{:-5d}".format(hours_worked),
+              "|", "{:-5.1f}".format(hours_worked),
               "|", hour_rate,
               "|", "{:-5.0f}".format(day_wage),
               "|", "{:-10.0f}".format(cumulative),
