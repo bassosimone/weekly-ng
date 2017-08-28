@@ -128,8 +128,8 @@ def main():
         print("|", day,
               "|", "{:-5.1f}".format(hours_worked),
               "|", hour_rate,
-              "|", "{:-5.0f}".format(day_wage),
-              "|", "{:-10.0f}".format(cumulative),
+              "|", "{:-5.1f}".format(day_wage),
+              "|", "{:-10.1f}".format(cumulative),
               "|")
 
     print("---")
